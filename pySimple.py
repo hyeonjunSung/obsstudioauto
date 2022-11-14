@@ -17,8 +17,8 @@ def padding_frame():
     return [sg.T(" ", font="맑은고딕 5")]
 
 # OBS Studio Process 찾기 Frame
-frame0_1 = [sg.T(" OBS Studio PID 입력 :", font='맑은고딕 13'), sg.Input(size=(40,1), key='-inputPID-'), sg.Button("적용", font="맑은고딕", size=(9,1))]
-frame0_2 = [sg.Push(),sg.T("연동 완료", key='-isConnet-', size=(10,1)), sg.Button("PID 찾기", font="맑은고딕", key='-findPIDbtn-',size=(9,1), pad=(10,10))]
+frame0_1 = [sg.T(" OBS Studio PID 입력 :", font='맑은고딕 13'), sg.Input(size=(40,1), key='-inputPID-'), sg.Button("적용", key='-obsConnectBtn-',font="맑은고딕", size=(9,1))]
+frame0_2 = [sg.Push(),sg.T("연동 실패", key='-isConnect-', size=(10,1)), sg.Button("PID 찾기", font="맑은고딕", key='-findPIDbtn-',size=(9,1), pad=(10,10))]
 
 # 화면 새로고침 주기 변경 Frame
 frame1_1 = [sg.T(" 화면 새로고침 주기 입력 : ", font='맑은고딕 13'), sg.Combo(values=(30, 60, 120, 180, 240, 300, 360), key='-RefreshViewList-', enable_events=True, size=(28, 1)),sg.T('초', font="맑은고딕"), sg.B('적용', font="맑은고딕", size=(9,1))]
@@ -27,9 +27,11 @@ frame1_1 = [sg.T(" 화면 새로고침 주기 입력 : ", font='맑은고딕 13'
 frame2_1 = [sg.T(" 화면전환 주기 입력 : ", font='맑은고딕 13'), sg.Combo(values=(5, 10, 20, 30, 60), key='-ChangeViewList-', enable_events=True, size=(35, 1), pad=(0,0)), sg.T('초', font="맑은고딕"),sg.B('적용', font="맑은고딕", size=(9,1))]
 
 # 에러 로그 Frame
+frame3_1 = [sg.T("")]
 
 # 현재 설정 Frame
 frame4_1 = [sg.T("")]
+
 # 하단 버튼
 row5 = [sg.Push(), sg.Button('실행', font="맑은고딕", size=(9,2)), sg.Button('종료', font="맑은고딕", size=(9,2)), sg.T("")]
 
@@ -70,4 +72,8 @@ while True:
                 print(str(proc.pid) + "\t" +proc.name())
                 values["-inputPID-"] = proc.pid
                 window["-inputPID-"].update(values["-inputPID-"])
+    if event == "-obsConnectBtn-":
+        values["-isConnect-"] = "연동 완료"
+        window["-isConnect-"].update(values["-isConnect-"])
+
 window.close()
