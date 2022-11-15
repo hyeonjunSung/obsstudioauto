@@ -86,7 +86,7 @@ while True:
             dlg.maximize()
         else :
             dlg.set_focus()
-        #dlg.print_control_identifiers()
+        dlg.print_control_identifiers()
         sceneList = dlg.child_window(title="장면 목록:", auto_id="OBSBasic.scenesDock", control_type="Window").ListBox
         print(sceneList.get_items())
         for scene in sceneList:
