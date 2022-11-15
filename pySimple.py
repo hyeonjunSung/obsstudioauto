@@ -1,6 +1,8 @@
 import PySimpleGUI as sg
 import os.path
 import psutil
+import time
+from pywinauto.application import Application
 
 
 sg.theme('DarkAmber')
@@ -18,13 +20,13 @@ def padding_frame():
 
 # OBS Studio Process 찾기 Frame
 frame0_1 = [sg.T(" OBS Studio PID 입력 :", font='맑은고딕 13'), sg.Input(size=(40,1), key='-inputPID-'), sg.Button("적용", key='-obsConnectBtn-',font="맑은고딕", size=(9,1))]
-frame0_2 = [sg.Push(),sg.T("연동 실패", key='-isConnect-', size=(10,1)), sg.Button("PID 찾기", font="맑은고딕", key='-findPIDbtn-',size=(9,1), pad=(10,10))]
+frame0_2 = [sg.Push(),sg.Input("연동실패", key='-isConnect-', size=(10,1)), sg.Button("PID 찾기", font="맑은고딕", key='-findPIDbtn-',size=(9,1), pad=(10,10))]
 
 # 화면 새로고침 주기 변경 Frame
 frame1_1 = [sg.T(" 화면 새로고침 주기 입력 : ", font='맑은고딕 13'), sg.Combo(values=(30, 60, 120, 180, 240, 300, 360), key='-RefreshViewList-', enable_events=True, size=(28, 1)),sg.T('초', font="맑은고딕"), sg.B('적용', font="맑은고딕", size=(9,1))]
 
 # 화면전환 주기 변경 Frame
-frame2_1 = [sg.T(" 화면전환 주기 입력 : ", font='맑은고딕 13'), sg.Combo(values=(5, 10, 20, 30, 60), key='-ChangeViewList-', enable_events=True, size=(35, 1), pad=(0,0)), sg.T('초', font="맑은고딕"),sg.B('적용', font="맑은고딕", size=(9,1))]
+frame2_1 = [sg.T(" 화면전환 주기 입력 : ", font='맑은고딕 13'), sg.Combo(values=(5, 10, 20, 30, 60), key='-ChangeViewList-', enable_events=True, size=(35, 1), pad=(0,0), default_value=5), sg.T('초', font="맑은고딕"),sg.B('적용', key="-changeViewBtn-", font="맑은고딕", size=(9,1))]
 
 # 에러 로그 Frame
 frame3_1 = [sg.T("")]
@@ -33,7 +35,7 @@ frame3_1 = [sg.T("")]
 frame4_1 = [sg.T("")]
 
 # 하단 버튼
-row5 = [sg.Push(), sg.Button('실행', font="맑은고딕", size=(9,2)), sg.Button('종료', font="맑은고딕", size=(9,2)), sg.T("")]
+row5 = [sg.Push(), sg.Button('실행', font="맑은고딕", size=(9,2), key='-startBtn-'), sg.Button('종료', font="맑은고딕", size=(9,2)), sg.T("")]
 
 
 
@@ -55,25 +57,40 @@ window = sg.Window('OBS Studio Auto Control @Innonet', layouts, grab_anywhere=Tr
 
 obsPID = 0
 
-
-
-
-
 # Event Loop
 while True:
     event, values = window.Read()
-
     if event in (sg.WIN_CLOSED, '종료'):
         break
     
     if event == "-findPIDbtn-":
         for proc in psutil.process_iter():
             if (proc.name() == "obs64.exe"):
-                print(str(proc.pid) + "\t" +proc.name())
+                #print(str(proc.pid) + "\t" +proc.name())
                 values["-inputPID-"] = proc.pid
                 window["-inputPID-"].update(values["-inputPID-"])
     if event == "-obsConnectBtn-":
-        values["-isConnect-"] = "연동 완료"
-        window["-isConnect-"].update(values["-isConnect-"])
+        if values["-isConnect-"] == "연동실패":
+            values["-isConnect-"] = "연동완료"
+            #print(type(values["-inputPID-"]))
+            app = Application(backend='uia').connect(process=int(values["-inputPID-"]))
+            #app.connect(process=)
+            window["-isConnect-"].update(values["-isConnect-"])
 
+    if event == "-changeViewBtn-":
+        changeInterval = values["-ChangeViewList-"]
+        print(changeInterval)
+    if event == "-startBtn-":
+        dlg = app.window()
+        if dlg.is_maximized() == False :
+            dlg.maximize()
+        else :
+            dlg.set_focus()
+        #dlg.print_control_identifiers()
+        sceneList = dlg.child_window(title="장면 목록:", auto_id="OBSBasic.scenesDock", control_type="Window").ListBox
+        print(sceneList.get_items())
+        for scene in sceneList:
+            scene.click_input()
+            time.sleep(int(changeInterval))
+        print("Done")
 window.close()
