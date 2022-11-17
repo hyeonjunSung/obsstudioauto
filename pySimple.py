@@ -1,10 +1,9 @@
 import PySimpleGUI as sg
-import os.path
 import psutil
-import time
 from pywinauto.application import Application
 import windowView as wv
-
+import schedule
+import keyboard
 
 sg.theme('DarkAmber')
 
@@ -24,7 +23,7 @@ frame0_1 = [sg.T(" OBS Studio PID 입력 :", font='맑은고딕 13'), sg.Input(s
 frame0_2 = [sg.Push(),sg.Input("연동실패", key='-isConnect-', size=(10,1)), sg.Button("PID 찾기", font="맑은고딕", key='-findPIDbtn-',size=(9,1), pad=(10,10))]
 
 # 화면 새로고침 주기 변경 Frame
-frame1_1 = [sg.T(" 화면 새로고침 주기 입력 : ", font='맑은고딕 13'), sg.Combo(values=(30, 60, 120, 180, 240, 300, 360), key='-RefreshViewList-', enable_events=True, size=(28, 1)),sg.T('초', font="맑은고딕"), sg.B('적용', key="-refreshViewBtn",font="맑은고딕", size=(9,1))]
+frame1_1 = [sg.T(" 화면 새로고침 주기 입력 : ", font='맑은고딕 13'), sg.Combo(values=(30, 60, 120, 180, 240, 300, 360), key='-RefreshViewList-', enable_events=True, size=(28, 1), default_value=30),sg.T('초', font="맑은고딕"), sg.B('적용', key="-refreshViewBtn-",font="맑은고딕", size=(9,1))]
 
 # 화면전환 주기 변경 Frame
 frame2_1 = [sg.T(" 화면전환 주기 입력 : ", font='맑은고딕 13'), sg.Combo(values=(5, 10, 20, 30, 60), key='-ChangeViewList-', enable_events=True, size=(35, 1), pad=(0,0), default_value=5), sg.T('초', font="맑은고딕"),sg.B('적용', key="-changeViewBtn-", font="맑은고딕", size=(9,1))]
@@ -58,6 +57,8 @@ window = sg.Window('OBS Studio Auto Control @Innonet', layouts, grab_anywhere=Tr
 
 obsPID = 0
 
+
+
 # Event Loop
 while True:
     event, values = window.Read()
@@ -80,16 +81,24 @@ while True:
 
     if event == "-changeViewBtn-":
         changeInterval = values["-ChangeViewList-"]
-        #print(changeInterval)
-
+        print(changeInterval)
     if event == "-refreshViewBtn-":
         refreshInterval = values["-RefreshViewList-"]
-
+        print(refreshInterval)
     if event == "-startBtn-":
         dlg = app.window()
+        sceneList = dlg.child_window(title="장면 목록:", auto_id="OBSBasic.scenesDock", control_type="Window").ListBox
+        timeSum = 0
 
-        wv.refreshView(dlg)
-        
+        while keyboard.is_pressed("F9") == False :
+            while timeSum < refreshInterval :
+                timeSum = timeSum + changeInterval
+                wv.changeView(dlg, changeInterval)
+                print(timeSum)
+            wv.refreshView(dlg)
+            timeSum = 0
+
+ 
         
 window.close()
 
