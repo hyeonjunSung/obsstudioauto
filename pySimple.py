@@ -16,7 +16,7 @@ refreshList = [5, 10, 20, 30, 60]
 def blank_frame():
     return sg.Frame("", [[]], pad=(5, 3), expand_x=True, expand_y=True, background_color='#404040', border_width=0)
 def padding_frame():
-    return [sg.T(" ", font="맑은고딕 5")]
+    return [sg.T(" ", font="맑은고딕 5", pad=(0,0))]
 
 # OBS Studio Process 찾기 Frame
 frame0_1 = [sg.T(" OBS Studio PID 입력 :", font='맑은고딕 13'), sg.Input(size=(40,1), key='-inputPID-'), sg.Button("적용", key='-obsConnectBtn-',font="맑은고딕", size=(9,1))]
@@ -32,7 +32,8 @@ frame2_1 = [sg.T(" 화면전환 주기 입력 : ", font='맑은고딕 13'), sg.C
 frame3_1 = [sg.T("")]
 
 # 현재 설정 Frame
-frame4_1 = [sg.T("")]
+frame4_1 = [sg.T(" 화면 새로고침 주기", font="맑은고딕 13"), sg.T(" ", key="-currentRefreshInterval-"), sg.T (" 초", font="맑은고딕 13")]
+frame4_2 = [sg.T(" 화면 전환 주기", font="맑은고딕 13"), sg.T(" ", key="-currentChangeInterval-"), sg.T (" 초", font="맑은고딕 13")]
 
 # 하단 버튼
 row5 = [sg.Push(), sg.Button('실행', font="맑은고딕", size=(9,2), key='-startBtn-'), sg.Button('종료', font="맑은고딕", size=(9,2)), sg.T("")]
@@ -48,7 +49,7 @@ layouts = [
     [sg.Push(),sg.Frame('화면 새로고침 주기 변경', layout=[padding_frame(), frame1_1, padding_frame()], font='HY견고딕 15 bold', size=(580,100))],
     [sg.Push(),sg.Frame('화면전환 주기 변경', [padding_frame(), frame2_1, padding_frame()], font='HY견고딕 15 bold', size=(580,100))],
     [sg.Push(),sg.Frame('에러 로그', [[blank_frame()]], font='HY견고딕 15 bold', size=(580,300))],
-    [sg.Push(),sg.Frame('현재 설정', [[blank_frame()]], font='HY견고딕 15 bold', size=(580,100))],
+    [sg.Push(),sg.Frame('현재 설정', [padding_frame(),frame4_1, frame4_2], font='HY견고딕 15 bold', size=(580,100))],
     row5
 ]
 
@@ -81,9 +82,13 @@ while True:
 
     if event == "-changeViewBtn-":
         changeInterval = values["-ChangeViewList-"]
+        values["-currentChangeInterval-"] = changeInterval
+        window["-currentChangeInterval-"].update(values["-currentChangeInterval-"])
         print(changeInterval)
     if event == "-refreshViewBtn-":
         refreshInterval = values["-RefreshViewList-"]
+        values["-currentRefreshInterval-"] = refreshInterval
+        window["-currentRefreshInterval-"].update(values["-currentRefreshInterval-"])
         print(refreshInterval)
     if event == "-startBtn-":
         dlg = app.window()
@@ -92,6 +97,8 @@ while True:
 
         while keyboard.is_pressed("F9") == False :
             while timeSum < refreshInterval :
+                if keyboard.is_pressed("F9") == True :
+                    break
                 timeSum = timeSum + changeInterval
                 wv.changeView(dlg, changeInterval)
                 print(timeSum)
